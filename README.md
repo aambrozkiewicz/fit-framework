@@ -1,4 +1,4 @@
 fit-framework
 =============
 
-Lean PHP >5.3 framework
+Lean PHP >=5.3 framework

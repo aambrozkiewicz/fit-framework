@@ -1,8 +1,6 @@
 <?php
 
-namespace fit;
-
-class App implements \ArrayAccess
+class app implements ArrayAccess
 {
 	private $controllers = array();
 	private $providers = array();
@@ -29,7 +27,7 @@ class App implements \ArrayAccess
 		unset($providers[$offset]);
 	}
 	
-	public function register(ExtInterface $ext, array $values = array())
+	public function register(extension $ext, array $values = array())
 	{
 		$ext->register($this, $values);
 		return $this;

@@ -1,6 +1,6 @@
 <?php
 
-class Template {
+class template {
 	private $vars  = array();
  
 	public function __get($name) {

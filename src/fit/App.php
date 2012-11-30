@@ -72,7 +72,7 @@ class App implements \ArrayAccess
 	
 	public function abort($msg, $code)
 	{
-		throw new app_exception($msg, $code);
+		throw new Exception($msg, $code);
 	}
 
 	public function run()
@@ -85,8 +85,7 @@ class App implements \ArrayAccess
 			$method_controllers = $this->controllers[$method];
 		
 		try {
-			foreach ($method_controllers as $regex => $callable)
-			{
+			foreach ($method_controllers as $regex => $callable) {
 				$regex = str_replace('/', '\/', $regex);
 				$regex = '^' . $regex . '\/?$';
 				if (preg_match("/$regex/i", $path, $matches)) {
@@ -96,7 +95,7 @@ class App implements \ArrayAccess
 				}
 			}
 
-			throw new app_exception('Not Found: ' . $path, 404);
+			throw new Exception('Not Found: ' . $path, 404);
 		} catch (Exception $e) {
 			foreach ($this->error_handlers as $err_handler) {
 				$content = $err_handler($e);

@@ -34,6 +34,13 @@ class App implements \ArrayAccess
 		$ext->register($this, $values);
 		return $this;
 	}
+	
+	public function share($callable)
+	{
+		return function($app) use ($callable) {
+			return $callable;
+		};
+	}
 
 	public function get($pattern, $callable)
 	{
@@ -81,8 +88,9 @@ class App implements \ArrayAccess
 		$path = $_SERVER['REQUEST_URI'];
 
 		$method_controllers = array();
-		if (isset($this->controllers[$method]))
+		if (isset($this->controllers[$method])) {
 			$method_controllers = $this->controllers[$method];
+		}
 		
 		try {
 			foreach ($method_controllers as $regex => $callable) {

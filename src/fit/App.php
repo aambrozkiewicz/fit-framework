@@ -2,15 +2,44 @@
 
 namespace fit;
 
-class App extends \Pimple
+class App implements \ArrayAccess
 {
 	private $controllers = array();
+	private $providers = array();
 	private $error_handlers = array();
+	
+	public function offsetExists($offset)
+	{
+		return isset($this->providers[$offset]);
+	}
+	
+	public function offsetGet($offset)
+	{
+		$val = $this->providers[$offset];
+		return is_callable($val) ? $val($this) : $val;
+	}
+	
+	public function offsetSet($offset, $value)
+	{
+		$this->providers[$offset] = $value;
+	}
+	
+	public function offsetUnset($offset)
+	{
+		unset($providers[$offset]);
+	}
 	
 	public function register(ExtInterface $ext, array $values = array())
 	{
 		$ext->register($this, $values);
 		return $this;
+	}
+	
+	public function share($callable)
+	{
+		return function($app) use ($callable) {
+			return $callable;
+		};
 	}
 
 	public function get($pattern, $callable)
@@ -37,6 +66,11 @@ class App extends \Pimple
 		return $this;
 	}
 	
+	private function match($method, $pattern, $callable)
+	{
+		$this->controllers[$method][$pattern] = $callable;
+	}
+	
 	public function error($callable)
 	{
 		$this->error_handlers[] = $callable;
@@ -46,11 +80,6 @@ class App extends \Pimple
 	public function abort($msg, $code)
 	{
 		throw new Exception($msg, $code);
-	}
-	
-	protected function match($method, $pattern, $callable)
-	{
-		$this->controllers[$method][$pattern] = $callable;
 	}
 
 	public function run()
@@ -76,19 +105,14 @@ class App extends \Pimple
 
 			throw new Exception('Not Found: ' . $path, 404);
 		} catch (Exception $e) {
-			$catched_once = false;
 			foreach ($this->error_handlers as $err_handler) {
 				$content = $err_handler($e);
 				if ($content !== null) {
 					echo $content;
 					break;
-				} else if ($content === false) { // break the chain
+				} else if ($content === false) {
 					break;
-				}
-				$catched_once |= true;
-			}
-			if (!$catched_once) {
-				throw $e;
+				}				
 			}
 		}
 	}

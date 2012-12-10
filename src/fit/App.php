@@ -4,8 +4,9 @@ namespace fit;
 
 class App extends \Pimple
 {
+	use Observeable;
+	
 	private $controllers = array();
-	private $error_handlers = array();
 	
 	public function register(ExtInterface $ext, array $values = array())
 	{
@@ -13,44 +14,21 @@ class App extends \Pimple
 		return $this;
 	}
 
-	public function get($pattern, $callable)
+	public function get($regex, $callable, $name = null)
 	{
-		$this->match('GET', $pattern, $callable);
-		return $this;
+		return $this->match('GET', $regex, $callable, $name);
 	}
 	
-	public function post($pattern, $callable)
+	protected function match($method, $regex, $callable, $name)
 	{
-		$this->match('POST', $pattern, $callable);
-		return $this;
+		$regex = str_replace('/', '\/', $regex);
+		$regex = '^' . $regex . '\/?$';
+		return $this->controllers[$method][$regex] = new Controller($regex, $callable, $name);
 	}
 	
-	public function put($pattern, $callable)
-	{
-		$this->match('PUT', $pattern, $callable);
-		return $this;
-	}
-	
-	public function delete($pattern, $callable)
-	{
-		$this->match('DELETE', $pattern, $callable);
-		return $this;
-	}
-	
-	public function error($callable)
-	{
-		$this->error_handlers[] = $callable;
-		return $this;
-	}
-	
-	public function abort($msg, $code)
+	public function abort($code, $msg = null)
 	{
 		throw new Exception($msg, $code);
-	}
-	
-	protected function match($method, $pattern, $callable)
-	{
-		$this->controllers[$method][$pattern] = $callable;
 	}
 
 	public function run()
@@ -58,37 +36,20 @@ class App extends \Pimple
 		$method = strtoupper($_SERVER['REQUEST_METHOD']);
 		$path = $_SERVER['REQUEST_URI'];
 
-		$method_controllers = array();
-		if (isset($this->controllers[$method])) {
-			$method_controllers = $this->controllers[$method];
-		}
+		$methodControllers = isset($this->controllers[$method]) ? $methodControllers = $this->controllers[$method] : array();
 		
 		try {
-			foreach ($method_controllers as $regex => $callable) {
-				$regex = str_replace('/', '\/', $regex);
-				$regex = '^' . $regex . '\/?$';
-				if (preg_match("/$regex/i", $path, $matches)) {
-					$content = call_user_func_array($callable, array_slice($matches, 1)); 
-					echo $content;
+			foreach ($methodControllers as $ctrl) {
+				if (($callable = $ctrl->match($path)) !== false) {
+					echo $callable;
 					return;
 				}
 			}
 
-			throw new Exception('Not Found: ' . $path, 404);
+			$this->abort(404, 'Not found');
 		} catch (Exception $e) {
-			$catched_once = false;
-			foreach ($this->error_handlers as $err_handler) {
-				$content = $err_handler($e);
-				if ($content !== null) {
-					echo $content;
-					break;
-				} else if ($content === false) { // break the chain
-					break;
-				}
-				$catched_once |= true;
-			}
-			if (!$catched_once) {
-				throw $e;
+			if (! $this->fire('error', $e)) {
+				http_response_code($e->getCode());
 			}
 		}
 	}

@@ -21,9 +21,9 @@ $app->get('/', function() use ($app) {
 	$tpl->posts = $app['db']->query('SELECT * FROM entries')->fetchAll(PDO::FETCH_ASSOC);
 	return $tpl;
 })->before(function() use($app) {
-	// if (true /* not logged in */) {
-	// 		$app->abort(401);
-	// 	}
+	if (true /* not logged in */) {
+		$app->abort(401);
+	}
 });
 
 $app->on('error', function($e) {

@@ -19,12 +19,19 @@ class Controller
 	
 	public function match($url)
 	{
-		$this->fire('before', $this);
 		if (preg_match("/{$this->regex}/i", $url, $matches)) {
-			$content = call_user_func_array($this->callable, $matches);
+			$this->fire('before', $this);
+			$content = call_user_func_array($this->callable, array_slice($matches, 1));
 			$this->fire('after', $this);
+			$found = true;
 		}
-		return empty($content) ? false : $content;
+		return empty($found) ? false : $content;
+	}
+	
+	public function name($value)
+	{
+		$this->name = $value;
+		return $this;
 	}
 	
 	public function before($callable)

@@ -19,6 +19,11 @@ class App extends \Pimple
 		return $this->match('GET', $regex, $callable, $name);
 	}
 	
+	public function post($regex, $callable, $name = null)
+	{
+		return $this->match('POST', $regex, $callable, $name);
+	}
+	
 	protected function match($method, $regex, $callable, $name)
 	{
 		$regex = str_replace('/', '\/', $regex);
@@ -30,13 +35,18 @@ class App extends \Pimple
 	{
 		throw new Exception($msg, $code);
 	}
+	
+	public function redirect($path)
+	{
+		header('Location: ' . $path);
+	}
 
 	public function run()
 	{
 		$method = strtoupper($_SERVER['REQUEST_METHOD']);
-		$path = $_SERVER['REQUEST_URI'];
+		$path = strtok($_SERVER['REQUEST_URI'], '?');
 
-		$methodControllers = isset($this->controllers[$method]) ? $methodControllers = $this->controllers[$method] : array();
+		$methodControllers = isset($this->controllers[$method]) ? $this->controllers[$method] : array();
 		
 		try {
 			foreach ($methodControllers as $ctrl) {
@@ -50,6 +60,7 @@ class App extends \Pimple
 		} catch (Exception $e) {
 			if (! $this->fire('error', $e)) {
 				http_response_code($e->getCode());
+				
 			}
 		}
 	}

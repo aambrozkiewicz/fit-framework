@@ -9,28 +9,39 @@ class Controller
 	}
 	
 	private $route;
+	private $converters = [];
 	
-	function __construct($regex, $callable, $name = null)
+	function __construct($pattern, $callable)
 	{
-		$this->regex = $regex;
+		$this->route = new Route($pattern);
 		$this->callable = $callable;
-		$this->name = $name ? $name : md5(date('U'));
 	}
 	
-	public function match($url)
+	public function __call($mthd, $arguments)
 	{
-		if (preg_match("/{$this->regex}/i", $url, $matches)) {
+		if (method_exists($this->route, $mthd)) {
+			return call_user_func_array(array($this->route, $mthd), $arguments);
+		}
+	}
+	
+	public function match($path)
+	{
+		if (($args = $this->route->match($path)) !== null) {
 			$this->fire('before', $this);
-			$content = call_user_func_array($this->callable, array_slice($matches, 1));
+			foreach (\array_intersect_key($this->converters, $args) 
+				as $arg => $fn) {
+					$args[$arg] = $fn($args[$arg]);
+			}
+			$content = call_user_func_array($this->callable, $args);
 			$this->fire('after', $this);
 			$found = true;
 		}
 		return empty($found) ? false : $content;
 	}
 	
-	public function name($value)
+	public function convert($arg, $fn)
 	{
-		$this->name = $value;
+		$this->converters[$arg] = $fn;
 		return $this;
 	}
 	

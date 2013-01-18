@@ -44,16 +44,4 @@ class Controller
 		$this->converters[$arg] = $fn;
 		return $this;
 	}
-	
-	public function before($callable)
-	{
-		$this->on('before', $callable);
-		return $this;
-	}
-	
-	public function after($callable)
-	{
-		$this->on('after', $callable);
-		return $this;
-	}
 }

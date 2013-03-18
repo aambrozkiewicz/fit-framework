@@ -36,7 +36,7 @@ class Route
 				if (is_numeric($key)) {
 					unset($matches[$key]);
 				}
-			}
+			} 
 		}
 		return $found ? $matches : null;
 	}

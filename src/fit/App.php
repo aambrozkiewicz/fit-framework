@@ -24,7 +24,7 @@ class App extends \Pimple
 		return $this->controllers[strtoupper($method)][] = new Controller($pattern, $callable);
 	}
 	
-	public function abort($code, $msg = null)
+	public function abort($msg, $code = 0)
 	{
 		throw new Exception($msg, $code);
 	}
@@ -44,7 +44,9 @@ class App extends \Pimple
 		try {
 			foreach ($methodControllers as $ctrl) {
 				if (($out = $ctrl->match($path)) !== false) {
+					$this->fire('beforeoutput', $out);
 					echo $out;
+					$this->fire('afteroutput', $out);
 					return;
 				}
 			}

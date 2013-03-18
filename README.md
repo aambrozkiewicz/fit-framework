@@ -1,7 +1,13 @@
 fit-framework
 =============
 
-Very lean PHP >=5.4 framework.
+Micro framework. Glues route to a callable with some chain syntax sugar.
+It is now capable of:
+* Routing with named parameters
+* Converting parameters to more complex objects before callable execution
+* Extendable by extensions (register on App)
+* Basic error handling
+* App and each route are observeable, both emit `before` and `after`
 
 ## Example app
 ```php
@@ -16,14 +22,15 @@ $app->register(new fit\Ext\Template, array(
 	'basepath' => 'views/'
 ));
 
-$app->get('/', function() use ($app) {
+$app->get('/:id', function($post) use ($app) {
 	$tpl = $app['tpl']('posts');
-	$tpl->posts = $app['db']->query('SELECT * FROM entries')->fetchAll(PDO::FETCH_ASSOC);
-	return $tpl;
+	return $tpl->post = $post;
 })->before(function() use($app) {
 	if (true /* not logged in */) {
 		$app->abort(401);
 	}
+})->assert('id', '\d+')->convert('id', function($id) use ($app) {
+	return $app['db']->query('SELECT * FROM posts WHERE id=?', array($id))->fetchAll(PDO::FETCH_ASSOC);
 });
 
 $app->on('error', function($e) {
@@ -32,6 +39,3 @@ $app->on('error', function($e) {
 
 $app->run();
 ```
-
-[1]: http://silex.sensiolabs.org/
-

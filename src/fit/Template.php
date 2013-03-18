@@ -19,6 +19,7 @@ class Template {
 	public function __set($name, $value) 
 	{
 		$this->vars[$name] = $value;
+		return $this;
 	}
  
 	public function render() 

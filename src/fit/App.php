@@ -26,7 +26,7 @@ class App extends \Pimple
 	
 	public function abort($msg, $code = 0)
 	{
-		throw new Exception($msg, $code);
+		throw new Exception($code, $msg);
 	}
 	
 	public function redirect($path)

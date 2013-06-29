@@ -5,7 +5,6 @@ namespace fit;
 class Controller
 {
 	use Observeable {
-		on as privte;
 	}
 	
 	private $route;

@@ -39,9 +39,9 @@ class App extends \Pimple
 		header('Location: ' . $path);
 	}
 	
-	public function request()
+	public function request($key)
 	{
-		return $this->request;
+		return isset($this->request[$key]) ? $this->request[$key] : null;
 	}
 
 	public function run()

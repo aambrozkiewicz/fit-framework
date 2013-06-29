@@ -19,6 +19,11 @@ class App extends \Pimple
 		return $this->match('GET', $pattern, $callable);
 	}
 	
+	public function post($pattern, $callable)
+	{
+		return $this->match('POST', $pattern, $callable);
+	}
+	
 	protected function match($method, $pattern, $callable)
 	{
 		return $this->controllers[strtoupper($method)][] = new Controller($pattern, $callable);
@@ -33,9 +38,15 @@ class App extends \Pimple
 	{
 		header('Location: ' . $path);
 	}
+	
+	public function request()
+	{
+		return $this->request;
+	}
 
 	public function run()
 	{
+		$this->request = $_REQUEST;
 		$method = strtoupper($_SERVER['REQUEST_METHOD']);
 		$path = strtok($_SERVER['REQUEST_URI'], '?');
 
@@ -43,10 +54,10 @@ class App extends \Pimple
 		
 		try {
 			foreach ($methodControllers as $ctrl) {
-				if (($out = $ctrl->match($path)) !== false) {
-					$this->fire('beforeoutput', $out);
-					echo $out;
-					$this->fire('afteroutput', $out);
+				if (($args = $ctrl->match($path)) !== null) {
+					$this->fire('before', $args);
+					echo $ctrl->output($args);
+					$this->fire('after', $args);
 					return;
 				}
 			}

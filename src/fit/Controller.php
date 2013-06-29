@@ -24,19 +24,14 @@ class Controller
 		}
 	}
 	
-	public function match($path)
+	public function output($args)
 	{
-		if (($args = $this->route->match($path)) !== null) {
-			$this->fire('before', $this);
-			foreach (\array_intersect_key($this->converters, $args) 
-				as $arg => $fn) {
-					$args[$arg] = $fn($args[$arg]);
-			}
-			$content = call_user_func_array($this->callable, $args);
-			$this->fire('after', $this);
-			$found = true;
+		foreach (\array_intersect_key($this->converters, $args) 
+			as $arg => $fn) {
+				$args[$arg] = $fn($args[$arg]);
 		}
-		return empty($found) ? false : $content;
+		
+		return call_user_func_array($this->callable, $args);
 	}
 	
 	public function convert($arg, $fn)

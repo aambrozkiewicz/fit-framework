@@ -1,39 +1,39 @@
 <?php
 
 namespace {
-function _gen_block_name($length = 5)
-{
-	$alphabet = range('a', 'z') + range(1, 100);
-	shuffle($alphabet);
-	return join(array_slice($alphabet, 0, $length));
-}
+	function _gen_block_name($length = 5)
+	{
+		$alphabet = range('a', 'z') + range(1, 100);
+		shuffle($alphabet);
+		return join(array_slice($alphabet, 0, $length));
+	}
 
-$GLOBALS['_blocks'] = [];
-$GLOBALS['_currentBlock'] = _gen_block_name();
+	$GLOBALS['_blocks'] = [];
+	$GLOBALS['_currentBlock'] = _gen_block_name();
 
-function _getBlocksContents()
-{
-	global $_blocks;
-	return join($_blocks);
-}
+	function _getBlocksContents()
+	{
+		global $_blocks;
+		return join($_blocks);
+	}
 
-function startblock($name)
-{
-	global $_blocks, $_currentBlock;
-	$_blocks[$_currentBlock] = ob_get_contents();
-	ob_end_clean();
-	ob_start();
-	$_currentBlock = $name;
-}
+	function block($name)
+	{
+		global $_blocks, $_currentBlock;
+		$_blocks[$_currentBlock] = ob_get_contents();
+		ob_end_clean();
+		ob_start();
+		$_currentBlock = $name;
+	}
 
-function endblock()
-{
-	global $_blocks, $_currentBlock;
-	$_blocks[$_currentBlock] = ob_get_contents();
-	ob_end_clean();
-	ob_start();
-	$_currentBlock = _gen_block_name();
-}
+	function endblock()
+	{
+		global $_blocks, $_currentBlock;
+		$_blocks[$_currentBlock] = ob_get_contents();
+		ob_end_clean();
+		ob_start();
+		$_currentBlock = _gen_block_name();
+	}
 } // global namespace
 
 namespace fit {

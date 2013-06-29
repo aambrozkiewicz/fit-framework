@@ -5,6 +5,7 @@ namespace fit;
 class Controller
 {
 	use Observeable {
+		fire as private;
 	}
 	
 	private $route;
@@ -29,8 +30,10 @@ class Controller
 			as $arg => $fn) {
 				$args[$arg] = $fn($args[$arg]);
 		}
-		
-		return call_user_func_array($this->callable, $args);
+		$this->fire('before');
+		$output = call_user_func_array($this->callable, $args);
+		$this->fire('after');
+		return $output;
 	}
 	
 	public function convert($arg, $fn)
